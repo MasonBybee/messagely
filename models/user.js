@@ -34,13 +34,18 @@ class User {
     if (!username || !password) {
       throw new ExpressError("Username and Password requried", 400);
     } else {
-      const result = await db.query(
-        `SELECT password FROM users WHERE username = $1`,
-        [username]
-      );
-      let user = result.rows[0];
-      if (user) {
-        return bcrypt.compare(password, user.password);
+      try {
+        const result = await db.query(
+          `SELECT password FROM users WHERE username = $1`,
+          [username]
+        );
+        let user = result.rows[0];
+        if (user) {
+          return await bcrypt.compare(password, user.password);
+        }
+      } catch (e) {
+        console.log("CAUGHT ERROR", e);
+        throw new ExpressError(e.msg, 400);
       }
     }
   }
